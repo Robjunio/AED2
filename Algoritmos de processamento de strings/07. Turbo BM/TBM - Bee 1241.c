@@ -74,6 +74,7 @@ int MIN(int num1, int num2) {
 void TBM(char *x, int m, char *y, int n) {
    int bcShift, i, j, shift, u, v, turboShift,
        bmGs[m], bmBc[ASIZE];
+   int verif = 0;
 
    // Pré-processando
    preBmGs(x, m, bmGs);
@@ -95,7 +96,13 @@ void TBM(char *x, int m, char *y, int n) {
       é registrada uma ocorrência dele no texto, se não 
       a busca continua*/
       if (i < 0) {
-         printf("Pattern found at index %d\n", j);
+         // Verificando se o padrão ocorre nos últimos dígitos do texto
+         if (n == j+m) 
+            printf("encaixa\n");
+         else
+            printf("nao encaixa\n");
+         verif = 1;
+         
          /* Desolcando o padrão para que o próximo caractere no texto se
          alinhe com a última ocorrência dele no padrão */
          shift = bmGs[0];
@@ -118,11 +125,28 @@ void TBM(char *x, int m, char *y, int n) {
 
       j += shift;
    }
+   
+   // Verificando se o padrão não ocorreu
+   if (verif == 0)
+      printf("nao encaixa\n");
 }
 
 int main() {
-   char *y = "GCATCGCAGAGAGTATACAGTACG";
-   char *x = "GCAGAGAG";
-   TBM(x, strlen(x), y, strlen(y));
+   char *y1 = "56234523485723854755454545478690";
+   char *x1 = "78690";
+   TBM(x1, strlen(x1), y1, strlen(y1));
+
+   char *y2 = "5434554";
+   char *x2 = "543";
+   TBM(x2, strlen(x2), y2, strlen(y2));
+
+   char *y3 = "1243";
+   char *x3 = "1243";
+   TBM(x3, strlen(x3), y3, strlen(y3));
+
+   char *y4 = "54";
+   char *x4 = "64545454545454545454545454545454554";
+   TBM(x4, strlen(x4), y4, strlen(y4));
+
    return 0;
 }

@@ -71,9 +71,11 @@ int MIN(int num1, int num2) {
     return (num1 < num2 ) ? num1 : num2;
 }
 
-void TBM(char *x, int m, char *y, int n) {
+// Verificando se as sílabas se repetem
+int TBM_gago(char *x, int m, char *y, int n) {
    int bcShift, i, j, shift, u, v, turboShift,
        bmGs[m], bmBc[ASIZE];
+   int gago = 0;
 
    // Pré-processando
    preBmGs(x, m, bmGs);
@@ -95,7 +97,7 @@ void TBM(char *x, int m, char *y, int n) {
       é registrada uma ocorrência dele no texto, se não 
       a busca continua*/
       if (i < 0) {
-         printf("Pattern found at index %d\n", j);
+         gago++;
          /* Desolcando o padrão para que o próximo caractere no texto se
          alinhe com a última ocorrência dele no padrão */
          shift = bmGs[0];
@@ -110,19 +112,117 @@ void TBM(char *x, int m, char *y, int n) {
          if (shift == bmGs[i])
             u = MIN(m - shift, v);
          else {
-            if (turboShift < bcShift)
-               shift = MAX(shift, u + 1);
-            u = 0;
+           if (turboShift < bcShift)
+              shift = MAX(shift, u + 1);
+           u = 0;
          }
       }
 
       j += shift;
    }
+
+   return gago;
+}
+
+// Separando as palavras da frase e removendo as sílabas repetidas
+void TBM(char *x, int m, char *y, int n) {
+   int bcShift, i, j, shift, u, v, turboShift,
+       bmGs[m], bmBc[ASIZE];
+   int k = 0, l, tam_p = 0, tam_r = 0;
+   char palavra[n], padrao[3];
+   char resp[n];
+
+   // Pré-processando
+   preBmGs(x, m, bmGs);
+   preBmBc(x, m, bmBc);
+
+   // Buscando
+   j = u = 0;
+   shift = m;
+
+   while (j <= n - m) {
+      i = m - 1;
+      while (i >= 0 && x[i] == y[i + j]) {
+         --i;
+         if (u != 0 && i == m - 1 - shift)
+            i -= u;
+      }
+
+      /* Se o padrão tiver sido percorrido por completo,
+      é registrada uma ocorrência dele no texto, se não 
+      a busca continua*/
+      if (i < 0) {
+         for (; k < j; k++) {
+            palavra[tam_p] = y[k];
+            tam_p++;
+         }
+         k = j+1;
+         
+         // Verificando se a palavra tem mais de 4 letras
+         if (tam_p >= 4) {
+            for (l = 0; l < 2; l++)
+               padrao[l] = palavra[l];
+
+            /* Verifica se as duas primeiras letras são repetidas e adiciona
+            o texto correto a resp */
+            if (TBM_gago(padrao, strlen(padrao), palavra, tam_p) > 1) {
+               for (l = 2; l < tam_p; l++) {
+                  resp[tam_r] = palavra[l];
+                  tam_r++;
+               }
+            } else {
+               for (l = 0; l < tam_p; l++) {
+                  resp[tam_r] = palavra[l];
+                  tam_r++;
+               }
+            }
+         } else {
+            for (l = 0; l < tam_p; l++) {
+               resp[tam_r] = palavra[l];
+               tam_r++;
+            }
+         }
+
+         resp[tam_r] = ' ';
+         tam_r++;
+         tam_p = 0;
+
+         /* Desolcando o padrão para que o próximo caractere no texto se
+         alinhe com a última ocorrência dele no padrão */
+         shift = bmGs[0];
+         u = m - shift;
+      } else {
+         v = m - 1 - i;
+         turboShift = u - v;
+         bcShift = bmBc[y[i + j]] - m + 1 + i;
+         shift = MAX(turboShift, bcShift);
+         shift = MAX(shift, bmGs[i]);
+
+         if (shift == bmGs[i])
+            u = MIN(m - shift, v);
+         else {
+           if (turboShift < bcShift)
+              shift = MAX(shift, u + 1);
+           u = 0;
+         }
+      }
+
+      j += shift;
+   }
+
+   for (; k < n; k++) {
+      resp[tam_r] = y[k];
+      tam_r++;
+   }
+
+   for (k = 0; k < tam_r; k++)
+      printf("%c", resp[k]);
+   printf("\n");
 }
 
 int main() {
-   char *y = "GCATCGCAGAGAGTATACAGTACG";
-   char *x = "GCAGAGAG";
+   char *y = "Juca comprou fafarinha na memercearia e papagou 4 reais o quilo. A mamae de Juca pediu para ele comprar mamais 2 quilos.";
+   char *x = " ";
    TBM(x, strlen(x), y, strlen(y));
    return 0;
 }

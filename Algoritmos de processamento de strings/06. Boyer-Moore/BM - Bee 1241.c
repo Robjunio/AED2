@@ -1,4 +1,4 @@
-// Programa em C - Algoritmo Turbo BM
+// Programa em C - Algoritmo Boyer-Moore
 #include <stdio.h>
 #include <string.h>
 
@@ -63,66 +63,69 @@ void preBmGs(char *x, int m, int bmGs[]) {
 
 // Função calcula o maior entre dois números
 int MAX(int num1, int num2) {
-    return (num1 > num2 ) ? num1 : num2;
+   return (num1 > num2 ) ? num1 : num2;
 }
 
-// Função calcula o menor entre dois números
-int MIN(int num1, int num2) {
-    return (num1 < num2 ) ? num1 : num2;
-}
-
-void TBM(char *x, int m, char *y, int n) {
-   int bcShift, i, j, shift, u, v, turboShift,
-       bmGs[m], bmBc[ASIZE];
-
+// Função que executa o pré-processamento e a fase de busca
+void BM(char *x, int m, char *y, int n) {
+   int i, j, bmGs[m], bmBc[ASIZE], verif = 0;
+ 
    // Pré-processando
    preBmGs(x, m, bmGs);
    preBmBc(x, m, bmBc);
-
+ 
    // Buscando
-   j = u = 0;
-   shift = m;
+   j = 0; // deslocamento do padrão em relação ao texto
 
    while (j <= n - m) {
-      i = m - 1;
-      while (i >= 0 && x[i] == y[i + j]) {
-         --i;
-         if (u != 0 && i == m - 1 - shift)
-            i -= u;
-      }
+      /* Percorrendo o padão da direita para a esquerda e
+      o texto da esquerda para a direita */
+      for (i = m - 1; i >= 0 && x[i] == y[i + j]; --i);
 
       /* Se o padrão tiver sido percorrido por completo,
       é registrada uma ocorrência dele no texto, se não 
       a busca continua*/
       if (i < 0) {
-         printf("Pattern found at index %d\n", j);
+         // Verificando se o padrão ocorre nos últimos dígitos do texto
+         if (n == j+m) 
+            printf("encaixa\n");
+         else
+            printf("nao encaixa\n");
+         verif = 1;
+
          /* Desolcando o padrão para que o próximo caractere no texto se
          alinhe com a última ocorrência dele no padrão */
-         shift = bmGs[0];
-         u = m - shift;
-      } else {
-         v = m - 1 - i;
-         turboShift = u - v;
-         bcShift = bmBc[y[i + j]] - m + 1 + i;
-         shift = MAX(turboShift, bcShift);
-         shift = MAX(shift, bmGs[i]);
-
-         if (shift == bmGs[i])
-            u = MIN(m - shift, v);
-         else {
-            if (turboShift < bcShift)
-               shift = MAX(shift, u + 1);
-            u = 0;
-         }
-      }
-
-      j += shift;
+         j += bmGs[0]; 
+      } else
+         /* Deslocando o padrão para que o caractere inválido no texto se
+         alinhe com a última ocorrência dele no padrão (a função max é usada
+         para garantir um deslocamento positivo: pode-se obter um deslocamento
+         negativo se a última ocorrência de caractere ruim no padrão estiver
+         no lado direito do caractere atual) */
+         j += MAX(bmGs[i], bmBc[y[i + j]] - m + 1 + i);
    }
+
+   // Verificando se o padrão não ocorreu
+   if (verif == 0)
+      printf("nao encaixa\n");
 }
 
 int main() {
-   char *y = "GCATCGCAGAGAGTATACAGTACG";
-   char *x = "GCAGAGAG";
-   TBM(x, strlen(x), y, strlen(y));
+   char *y1 = "56234523485723854755454545478690";
+   char *x1 = "78690";
+   BM(x1, strlen(x1), y1, strlen(y1));
+
+   char *y2 = "5434554";
+   char *x2 = "543";
+   BM(x2, strlen(x2), y2, strlen(y2));
+
+   char *y3 = "1243";
+   char *x3 = "1243";
+   BM(x3, strlen(x3), y3, strlen(y3));
+
+   char *y4 = "54";
+   char *x4 = "64545454545454545454545454545454554";
+   BM(x4, strlen(x4), y4, strlen(y4));
+
    return 0;
 }
