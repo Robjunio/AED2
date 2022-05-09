@@ -49,11 +49,15 @@ void preBmGs(char *x, int m, int bmGs[], int suff[]) {
         bmGs[i] = m;
     
     j = 0;
-    for (i = m - 1; i >= 0; --i)
-        if (suff[i] == i + 1)
-            for (; j < m - 1 - i; ++j)
+    for (i = m - 1; i >= 0; --i) {
+        if (suff[i] == i + 1) {
+            for (; j < m - 1 - i; ++j) {
                 if (bmGs[j] == m)
-                bmGs[j] = m - 1 - i;
+                    bmGs[j] = m - 1 - i;
+            }
+        }
+    }
+    
     for (i = 0; i <= m - 2; ++i)
         bmGs[m - 1 - suff[i]] = m - 1 - i;
 }
@@ -76,40 +80,42 @@ void AG(char *x, int m, char *y, int n) {
     
     // Buscando
     j = 0;
-    while (j <= n - m) {  //Enquanto j for menor ou igual ao tamanho da string menos o padrão
+    // Enquanto j for menor ou igual ao tamanho da string menos o padrão
+    while (j <= n - m) {
         i = m - 1;
         while (i >= 0) {
-	    //Pega as informações das tabelas
+           // Pega as informações das tabelas
             k = skip[i]; 
             s = suff[i];
             if (k > 0)
                 if (k > s) {
-                if (i + 1 == s)
-                    i = (-1); // Palavra foi encontrada
-                else
-                    i -= s;
-                break;
+                    if (i + 1 == s)
+                        i = (-1); // Palavra foi encontrada
+                    else
+                        i -= s;
+                    break;
                 }
                 else {
-                i -= k;
+                    i -= k;
                 if (k < s)
                     break;
                 }
-	    // Se o skip for igual a 0, não há motivo para pular logo compara-se a casa e pula para a casa a esquerda
+            /* Se o skip for igual a 0, não há motivo para pular, logo
+            compara-se a casa e pula para a casa a esquerda */
             else {
                 if (x[i] == y[i + j])
-                --i;
+                    --i;
                 else
-                break;
+                    break;
             }
         }
-	// Imprime o index que a palavra foi encontrada
+        // Imprime o index que a palavra foi encontrada
         if (i < 0) {
             printf("Pattern found at index %d\n", j);
             skip[m - 1] = m;
             shift = bmGs[0];
         }
-	// Coloca o skip em um novo valor, e calcula o novo shift
+        // Coloca o skip em um novo valor e calcula o novo shift
         else {
             skip[m - 1] = m - 1 - i;
             shift = MAX(bmGs[i], bmBc[y[i + j]] - m + 1 + i);

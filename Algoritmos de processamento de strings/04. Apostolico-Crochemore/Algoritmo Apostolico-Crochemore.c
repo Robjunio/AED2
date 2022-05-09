@@ -4,7 +4,8 @@
 
 // x = padrão; y = texto; m = tamanho do padrão; n = tamanho do texto
 
-// Nesse pré-processamento é feita a lista preKmp que auxilia para saber o que já foi comparado na string original
+/* Nesse pré-processamento, é feito a lista preKmp que auxilia
+para saber o que já foi comparado na string original */
 void preKmp(char *x, int m, int kmpNext[]) {
     int i, j;
 
@@ -42,14 +43,16 @@ void AXAMAC(char *x, int m, char *y, int n) {
     // Buscando
     i = ell;
     j = k = 0;
-    while (j <= n - m) { // Enquanto j for menor que o tamanho da string menos o padrão
+    // Enquanto j for menor que o tamanho da string menos o padrão
+    while (j <= n - m) {
         while (i < m && x[i] == y[i + j])
             ++i;
         
         if (i >= m) {
             while (k < ell && x[k] == y[j + k])
                 ++k;
-            if (k >= ell) // Se caso k >= ell quer dizer que uma palavra foi encontrada 
+            // Se caso k >= ell quer dizer que uma palavra foi encontrada
+            if (k >= ell) 
                 printf("Pattern found at index %d\n", j);
         }
         j += (i - kmpNext[i]);
