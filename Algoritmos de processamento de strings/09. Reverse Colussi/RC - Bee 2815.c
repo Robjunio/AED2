@@ -5,6 +5,9 @@
 #define ASIZE 256 // quantidade possível de diferentes caracteres no texto
 // x = padrão; y = texto; m = tamanho do padrão; n = tamanho do texto
 
+/* A função preRc é para o pré-processamento dos componentes,
+computando na tabela que vai ser fatorado em sufixo e começa 
+a agilizar a organização para a procura */
 void preRc(char *x, int m, int h[],
            int rcBc[ASIZE][m], int rcGs[]) {
    int a, i, j, k, q, r, s,
@@ -80,10 +83,40 @@ void preRc(char *x, int m, int h[],
       }
    rcGs[m] = rmin[0];
 }
+
+// Verificando se as sílabas se repetem
+int RC_gago(char *x, int m, char *y, int n) {
+   int i, j, s, rcBc[ASIZE][m], rcGs[m], h[m], gago = 0;
  
+   // Pré-processando
+   preRc(x, m, h, rcBc, rcGs);
  
+   // Buscando
+   j = 0;
+   s = m;
+   while (j <= n - m) {
+      while (j <= n - m && x[m - 1] != y[j + m - 1]) {
+         s = rcBc[y[j + m - 1]][s];
+         j += s;
+      }
+      for (i = 1; i < m && x[h[i]] == y[j + h[i]]; ++i);
+      if (i >= m)
+         gago++;
+      s = rcGs[i];
+      j += s;
+   }
+
+   return gago;
+}
+
+/* A função principal da RC funciona agiliazando o passo na procura
+de strings dos quais os sufixos vão esta organizados nas tabelas */
+// Separando as palavras da frase e removendo as sílabas repetidas
 void RC(char *x, int m, char *y, int n) {
-   int i, j, s, rcBc[ASIZE][m], rcGs[m], h[m], verif = 0;
+   int i, j, s, rcBc[ASIZE][m], rcGs[m], h[m], k = 0, l, tam_p = 0, tam_r = 0;
+   char palavra[n], padrao[3];
+   char resp[n];
+
  
    // Pré-processando
    preRc(x, m, h, rcBc, rcGs);
@@ -98,40 +131,55 @@ void RC(char *x, int m, char *y, int n) {
       }
       for (i = 1; i < m && x[h[i]] == y[j + h[i]]; ++i);
       if (i >= m) {
-         // Verificando se o padrão ocorre nos últimos dígitos do texto
-         if (n == j+m) 
-            printf("encaixa\n");
-         else
-            printf("nao encaixa\n");
-         verif = 1;
+         for (; k < j; k++) {
+            palavra[tam_p] = y[k];
+            tam_p++;
+         }
+         k = j+1;
+         
+         // Verificando se a palavra tem mais de 4 letras
+         if (tam_p >= 4) {
+            for (l = 0; l < 2; l++)
+               padrao[l] = palavra[l];
+
+            /* Verifica se as duas primeiras letras são repetidas e adiciona
+            o texto correto a resp */
+            if (RC_gago(padrao, strlen(padrao), palavra, tam_p) > 1) {
+               for (l = 2; l < tam_p; l++) {
+                  resp[tam_r] = palavra[l];
+                  tam_r++;
+               }
+            } else {
+               for (l = 0; l < tam_p; l++) {
+                  resp[tam_r] = palavra[l];
+                  tam_r++;
+               }
+            }
+         } else {
+            for (l = 0; l < tam_p; l++) {
+               resp[tam_r] = palavra[l];
+               tam_r++;
+            }
+         }
+
+         resp[tam_r] = ' ';
+         tam_r++;
+         tam_p = 0;
       }
       s = rcGs[i];
       j += s;
    }
 
-   // Verificando se o padrão não ocorreu
-   if (verif == 0)
-      printf("nao encaixa\n");
+   for (; k < n; k++) {
+      resp[tam_r] = y[k];
+      tam_r++;
+   }
+   printf("%s\n", resp);
 }
 
 int main() {
-   char *y1 = "56234523485723854755454545478690";
-   char *x1 = "78690";
-   RC(x1, strlen(x1), y1, strlen(y1));
-
-   /* Código encontra duas ocorrências do padrão no texto,
-   porém só ocorre uma (um problema que não conseguimos consertar)*/
-   char *y2 = "5434554";
-   char *x2 = "543";
-   RC(x2, strlen(x2), y2, strlen(y2));
-
-   char *y3 = "1243";
-   char *x3 = "1243";
-   RC(x3, strlen(x3), y3, strlen(y3));
-
-   char *y4 = "54";
-   char *x4 = "64545454545454545454545454545454554";
-   RC(x4, strlen(x4), y4, strlen(y4));
-
-	return 0;
+   char *y = "Juca comprou fafarinha na memercearia e papagou 4 reais o quilo. A mamae de Juca pediu para ele comprar mamais 2 quilos.";
+   char *x = " ";
+   RC(x, strlen(x), y, strlen(y));
+   return 0;
 }
